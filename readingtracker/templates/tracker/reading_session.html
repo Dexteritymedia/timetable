@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Reading Session: {{ session.file.name }}</h2>
+
+<div>
+    <h3>Content:</h3>
+    <pre>{{ content }}</pre> <!-- Using <pre> to preserve formatting -->
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Finish Reading</button>
+</form>
+
+{% endblock content %}
+
+{% block js %}
+<script>
+    let readingStartTime = new Date();
+    let readingDuration = 0;
+
+    // Function to send reading time to the server
+    function sendReadingTime() {
+        let readingEndTime = new Date();
+        readingDuration = Math.floor((readingEndTime - readingStartTime) / 1000); // duration in seconds
+
+        fetch("{% url 'reading_time:summary' session.id %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",  // Include CSRF token for security
+            },
+            body: JSON.stringify({
+                'reading_duration': readingDuration
+            }),
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Reading time recorded successfully.');
+            } else {
+                console.error('Failed to record reading time.');
+            }
+        });
+    }
+
+    // Event listener for beforeunload
+    window.addEventListener("beforeunload", function(event) {
+        sendReadingTime();
+    });
+
+    // Optional: If you want to trigger the reading time recording when the user clicks "Finish Reading"
+    document.querySelector('form').addEventListener('submit', function(event) {
+        sendReadingTime();
+    });
+</script>
+{% endblock js %}

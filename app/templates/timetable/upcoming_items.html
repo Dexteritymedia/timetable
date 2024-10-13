@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block style %}
+ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    li {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    li strong {
+        color: #333;
+    }
+    
+    li em {
+        color: #666;
+    }
+{% endblock style %}
+
+{% block content %}
+
+<h2>Your Upcoming Items</h2>
+
+<ul>
+    {% for item in upcoming_items %}
+        <li>
+            <strong>{{ item.date|date:"jS F Y" }} at {{ item.time|time:"g:i A" }}:</strong>
+            {{ item.description }}
+        </li>
+    {% empty %}
+        <li>No upcoming items.</li>
+    {% endfor %}
+</ul>
+
+{% endblock content %}

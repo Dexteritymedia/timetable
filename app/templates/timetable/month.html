@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% load custom_filters %}
+
+{% block style %}
+
+.colorbar {
+	margin : 20px 0;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #f9f9f9;
+}
+
+.color-box {
+	display: inline-block;
+	width: 30px;
+	height: 20px;
+	margin-right: 10px;
+	border: 1px solid #000;
+}
+
+.calendar {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+  }
+  
+  .calendar-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .calendar-day {
+    flex-basis: calc(14.28% - 10px); /* 7 days in a week */
+    padding: 10px;
+    margin: 5px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 50%; /* For circle */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .calendar-day a {
+    text-decoration: none;
+    color: black;
+  }
+
+  .calendar-day.has-items {
+    background-color: lightgreen;
+    border: 2px solid green;
+  }
+
+  .calendar-day.has-items a {
+    font-weight: bold;
+  }
+
+  .calendar-day:hover {
+    background-color: none;
+  }
+
+  .calendar-day.has-items:hover {
+    background-color: darkgreen;
+    color: white;
+  }
+{% endblock style %}
+
+{% block content %}
+
+{% for entry in days_with_weekdays %}
+	{{entry.date|date:"Y-m-d"}}
+	{{entry.weekday}}
+{% endfor %}
+	<h1>Timetable for {{ days.0|date:"F Y" }}</h1>
+
+<!-- Navigation for previous and next months -->
+<div>
+    <a href="{% url 'month_view' prev_month.year prev_month.month %}">&laquo; Previous Month</a> |
+    <a href="{% url 'month_view' next_month.year next_month.month %}">Next Month &raquo;</a>
+    <a href="{% url 'month_view' today.year today.month %}">Today &raquo;</a>
+</div>
+
+<div class="colorbar">
+	<div class="color-box" style="background-color: "></div>
+</div>
+
+{% include 'color_form.html' %}
+
+<div class="calendar">
+  <!-- Display days in a grid-like layout -->
+  <div class="calendar-row">
+    {% for day in days %}
+      <!-- If there are items for this day, use the color from day_colors, otherwise use default -->
+		{% if day|date:"Y-m-d" < current_date|date:"Y-m-d" %}
+			<div class="calendar-day" style="opacity: 0.5; cursor: default;">
+				{{ day|date:"j" }}
+			</div>
+		{% else %}
+		{% with day.day as current_day %}
+			<div class="calendar-day" style="background-color: {{ day_colors|get_item:current_day }};">
+				<a href="#" data-bs-toggle="modal" data-bs-target="#dayModal{{ day.day }}">
+					{{ day|date:"j" }}
+				</a>
+			</div>
+
+      <!-- Bootstrap Modal for this day -->
+      <div class="modal fade" id="dayModal{{ day.day }}" tabindex="-1" aria-labelledby="dayModalLabel{{ day.day }}" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="dayModalLabel{{ day.day }}">Items for {{ day|date:"jS F Y" }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              {% if items_by_day|get_item:current_day %}
+                <ul>
+                  {% for item in items_by_day|get_item:current_day %}
+                    <li><strong>{{ item.time|time:"g:i A" }}:</strong> {{ item.description }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p>No items for this day.</p>
+              {% endif %}
+            {% endwith %}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+	{% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,35 @@
+<form class="container mb-4" method="get" action="{% url 'find_rent' %}">
+  <div class="row">
+	<div class="col-2 form-group">
+        {{ form.min_price.label_tag }}
+		{{ form.min_price }}
+		{% if form.min_price.errors %}
+			<div class="alert alert-danger">{{ form.min_price.errors }}</div>
+		{% endif %}
+	</div>
+	<div class="col-2 form-group">
+        {{ form.max_price.label_tag }}
+		{{ form.max_price }}
+		{% if form.max_price.errors %}
+			<div class="alert alert-danger">{{ form.max_price.errors }}</div>
+		{% endif %}
+	</div>
+	<div class="col-4 form-group">
+        {{ form.property_type.label_tag }}
+		{{ form.property_type }}
+		{% if form.property_type.errors %}
+			<div class="alert alert-danger">{{ form.property_type.errors }}</div>
+		{% endif %}
+	</div>
+	<div class="col-4 form-group">
+        {{ form.city_lga.label_tag }}
+		{{ form.city_lga }}
+		{% if form.city_lga.errors %}
+			<div class="alert alert-danger">{{ form.city_lga.errors }}</div>
+		{% endif %}
+	</div>
+    <div class="col-4 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100">Search</button>
+    </div>
+  </div>
+</form>

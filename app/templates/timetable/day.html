@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+
+{% block style %}
+	table {
+		width: 50%;
+		margin: 0 auto;
+		border-collapse: collapse;
+  }
+  th, td {
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f4f4f4;
+  }
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+{% endblock style %}
+
+
+{% block content %}
+
+<h1>Timetable for {{ date|date:"jS F Y" }}</h1>
+<table border="1" cellpadding="10">
+  <tr>
+    <th>Time</th>
+    <th>Item</th>
+  </tr>
+  {% for time, item in schedule.items %}
+  <tr>
+    <td>{{ time|time:"g:i A" }}</td>
+    <td>
+      {% if item %}
+        {{ item }}
+      {% else %}
+        No items
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<a href="{% url 'month_view' %}">Back to the calendar</a>
+{% endblock content %}

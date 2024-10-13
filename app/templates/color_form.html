@@ -1,0 +1,39 @@
+<form id="colorForm" method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+	<div class="form-group">
+		<label for="{{ form.colors.id_for_label }}" class="mr-2">Choose {{ form.colors.label }}: </label>
+	<select name="{{ form.colors.name }}" id="{{ form.colors.id_for_label }}" class="form-control form-control-sm">
+		{% for value, label in form.colors.field.choices %}
+			<option value="{{ value }}" {% if value == form.colors.value %}selected{% endif %}>{{ label }}</option>
+		{% endfor %}
+	</select>
+</div>
+</form>
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+	$(document).ready(function() {
+		$('#id_colors').change(function() {
+			var formData = $('#colorForm').serialize();
+			$.ajax({
+				type: 'POST',
+				url: '',
+				data: formData,
+				success: function(response) {
+					if (response.success) {
+						alert('Color updated successfully!');
+					} else {
+						alert('Error updating color.');
+					}
+				},
+				error: function() {
+					alert('An error occured. Please try again.');
+				}
+			});
+			location.reload();
+		});
+	});
+</script>
+{% endblock js %}
+					
