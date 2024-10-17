@@ -1,15 +1,18 @@
 from django.utils import timezone
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from matplotlib import cm
+import matplotlib.pyplot as plt
 import numpy as np
 from calendar import monthrange
 import calendar
 from datetime import datetime, time, timedelta
 from .forms import *
 from .models import Item
+import os
 
 User = get_user_model()
 
@@ -31,6 +34,37 @@ def get_color_for_value(value, max_value, color_map='viridis'):
     color = cmap(normalized_value)
     #color = cm.Oranges(normalized_value) #viridis, Purples, plasma, magma, YlGnBu, Greens, Blues, Oranges, inferno, Reds, 
     return '#' + ''.join(f'{int(c * 255):02x}' for c in color[:3])
+
+
+def generate_colorbar(colormap_name):
+    colorbar_filename = f'colorbar_{colormap_name}.png'
+    colorbar_path = os.path.join(settings.MEDIA_ROOT, colorbar_filename)
+
+    # Check if the image already exists
+    if not os.path.exists(colorbar_path):
+        # Create a figure for the colorbar if it doesn't exist
+        fig, ax = plt.subplots(figsize=(6, 1))
+        fig.subplots_adjust(bottom=0.5)
+
+        # Create a gradient for the colorbar with values ranging from 0 to 10
+        gradient = np.linspace(0, 10, 256)
+        gradient = np.vstack((gradient, gradient))
+
+        # Get the colormap by name (e.g., 'viridis', 'plasma', etc.)
+        colormap = cm.get_cmap(colormap_name)
+
+        # Display the colorbar using the specified colormap
+        ax.imshow(gradient, aspect='auto', cmap=colormap, extent=[0, 10, 0, 1])
+        ax.set_axis_off()
+
+        # Save the figure to the defined path
+        fig.savefig(colorbar_path, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+
+    # Construct the URL for the colorbar image
+    image_url = os.path.join(settings.MEDIA_URL, colorbar_filename)
+
+    return image_url
 
 def index_view(request):
     context = {}
@@ -91,6 +125,7 @@ def month_view(request, year=None, month=None):
     """
 
     items_by_day = {day: [] for day in range(1, num_days + 1)}
+    print(items_by_day)
     for item in items:
         if item.date.day not in items_by_day:
             items_by_day[item.date.day] = []
@@ -120,10 +155,21 @@ def month_view(request, year=None, month=None):
     print(day_colors)
     print(request.user.colors)
 
-    form = change_color_view(request)
+    color_form = change_color_view(request)
+    print(color_form)
+    colorbar_url = generate_colorbar(request.user.colors)
+
+    cal = calendar.Calendar(firstweekday=6)
+    days_of_week = list(calendar.day_name)
+
+    days_of_week = days_of_week[-1:] + days_of_week[:-1]
+    month_days = cal.monthdayscalendar(year, month)
+    print(month_days)
+    print(num_days)
+    
     
     context = {
-        'form': form,
+        'form': color_form,
         'days': days,
         'items_by_day': items_by_day,
         'day_colors': day_colors,
@@ -134,6 +180,9 @@ def month_view(request, year=None, month=None):
         'today': current_date,
         'current_date': current_date,
         'days_with_weekdays': days_with_weekdays,
+        'colorbar_url': colorbar_url,
+        'days_of_week': days_of_week,
+        'month_days': month_days,
     }
 
     return render(request, 'timetable/month.html', context)

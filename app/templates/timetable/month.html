@@ -70,14 +70,19 @@
     background-color: darkgreen;
     color: white;
   }
+  
+  .empty-day {
+	background-color: #f0f0f0;
+}
+	.day {
+		padding: 5px;
+		text-align: center;
+		border: 1px solid;
+	}
 {% endblock style %}
 
 {% block content %}
 
-{% for entry in days_with_weekdays %}
-	{{entry.date|date:"Y-m-d"}}
-	{{entry.weekday}}
-{% endfor %}
 	<h1>Timetable for {{ days.0|date:"F Y" }}</h1>
 
 <!-- Navigation for previous and next months -->
@@ -92,6 +97,31 @@
 </div>
 
 {% include 'color_form.html' %}
+<img src="{{ colorbar_url }}" class="img-fluid">
+
+<table>
+<thead><tr>
+{% for day_name in days_of_week %}
+<th>{{ day_name }}</th>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for week in month_days %}
+</tr>
+{% for day in week %}
+{% if day == 0 %}
+<td class="empty-day"></td>
+{% elif day|date:"Y-m-d" < current_date|date:"Y-m-d" %}
+<td class="day" style="opacity: 0.5; cursor: default;">{{ day}}</td>
+{% else %}
+<td class="day">{{ day }}</td>
+{% endif %}
+{% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+</table>
 
 <div class="calendar">
   <!-- Display days in a grid-like layout -->
@@ -109,6 +139,8 @@
 					{{ day|date:"j" }}
 				</a>
 			</div>
+			
+			
 
       <!-- Bootstrap Modal for this day -->
       <div class="modal fade" id="dayModal{{ day.day }}" tabindex="-1" aria-labelledby="dayModalLabel{{ day.day }}" aria-hidden="true">
